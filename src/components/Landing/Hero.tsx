@@ -3,16 +3,17 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
 
-// 1. Yahan humne bataya ki data kaisa dikhega (Interface add kiya)
-interface HeroProps {
-  data?: {
-    title: string;
-    subtitle: string;
-    cta_text: string;
-  } | null;
+// Defined exactly what Supabase JSON looks like
+export interface HeroData {
+  title: string;
+  subtitle: string;
+  cta_text: string;
 }
 
-// 2. Yahan props receive kiya ({ data }: HeroProps)
+interface HeroProps {
+  data: HeroData | null; // Allow null while loading
+}
+
 const Hero = ({ data }: HeroProps) => {
   return (
     <section className="relative overflow-hidden bg-background">
@@ -31,7 +32,6 @@ const Hero = ({ data }: HeroProps) => {
               <span>For Grades 1-5</span>
             </div>
 
-            {/* 3. Title Logic: Agar data.title hai to wo dikhao, nahi to purana design */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
               {data?.title ? (
                 data.title
@@ -45,7 +45,6 @@ const Hero = ({ data }: HeroProps) => {
               )}
             </h1>
 
-            {/* 4. Subtitle Logic: Database wala text YA fir default text */}
             <p className="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto lg:mx-0">
               {data?.subtitle ||
                 "Join Mahima Academy and watch your child excel with our interactive courses, expert teachers, and joyful learning experience."}
@@ -57,7 +56,6 @@ const Hero = ({ data }: HeroProps) => {
                   size="lg"
                   className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-lg shadow-primary/20"
                 >
-                  {/* 5. Button Text Logic */}
                   {data?.cta_text || "Start Learning"}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -72,8 +70,8 @@ const Hero = ({ data }: HeroProps) => {
                 </Button>
               </Link>
             </div>
-
-            {/* Stats */}
+            
+            {/* Stats Section remains static or can be made dynamic similarly */}
             <div className="flex items-center justify-center lg:justify-start gap-8 pt-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-foreground">500+</div>
@@ -100,22 +98,6 @@ const Hero = ({ data }: HeroProps) => {
                 alt="Happy children learning"
                 className="w-full h-auto"
               />
-            </div>
-            {/* Floating cards */}
-            <div className="absolute -bottom-4 -left-4 bg-card p-4 rounded-2xl shadow-lg border border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center text-success">
-                  ✓
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground text-sm">
-                    Live Classes
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Interactive learning
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
