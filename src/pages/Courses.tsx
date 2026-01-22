@@ -1,24 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Layout/Header";
 import Sidebar from "@/components/Layout/Sidebar";
-import CourseCard from "@/components/courses/CourseCard";
-import { courses, gradeOptions } from "@/data/mockData";
+import CourseCard, { CourseProps } from "@/components/courses/CourseCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { supabase } from "../supabaseClient"; 
-
 
 const Courses = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState<string>("all");
   const navigate = useNavigate();
 
+  // 1. State for Real Data & Loading
+  const [courseList, setCourseList] = useState<CourseProps[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // 2. Fetch Data from Supabase
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      // Fetch data matching your SQL columns
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      if (data) {
+        setCourseList(data);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 3. Generate Grade Options (1 to 12)
+  const gradeOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+  // 4. Filtering Logic on Real Data
   const filteredCourses = selectedGrade === "all"
-    ? courses
-    : courses.filter((c) => c.grade === Number(selectedGrade));
+    ? courseList
+    : courseList.filter((c) => c.grade === Number(selectedGrade));
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -39,10 +70,10 @@ const Courses = () => {
       </div>
 
       <main className="flex-1 p-4 space-y-4">
-        {/* Filter */}
+        {/* Filter Section */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {filteredCourses.length} courses available
+            {loading ? "Loading..." : `${filteredCourses.length} courses available`}
           </p>
           <Select value={selectedGrade} onValueChange={setSelectedGrade}>
             <SelectTrigger className="w-32 bg-card border-border">
@@ -60,13 +91,18 @@ const Courses = () => {
         </div>
 
         {/* Course Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredCourses.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground">Loading courses from database...</div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredCourses.map((course) => (
+              <CourseCard key={course.id} course={course} />
+            ))}
+          </div>
+        )}
 
-        {filteredCourses.length === 0 && (
+        {/* Empty State */}
+        {!loading && filteredCourses.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No courses found for this grade.</p>
           </div>
