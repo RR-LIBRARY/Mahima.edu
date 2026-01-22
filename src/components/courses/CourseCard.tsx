@@ -1,9 +1,18 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { Course } from "@/data/mockData";
+
+// 1. Define the Interface locally (Matching Supabase SQL)
+export interface CourseProps {
+  id: string;
+  title: string;
+  description?: string;
+  image_url?: string; // Changed from thumbnailUrl to match SQL
+  grade: number;
+  price?: number;     // Optional, if you want to show price later
+}
 
 interface CourseCardProps {
-  course: Course;
+  course: CourseProps;
   onClick?: () => void;
 }
 
@@ -14,8 +23,9 @@ const CourseCard = ({ course, onClick }: CourseCardProps) => {
       onClick={onClick}
     >
       <div className="aspect-video relative overflow-hidden bg-muted">
+        {/* 2. Updated to use image_url with a fallback */}
         <img
-          src={course.thumbnailUrl}
+          src={course.image_url || "https://via.placeholder.com/400x300?text=No+Image"}
           alt={course.title}
           className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
         />
@@ -28,7 +38,7 @@ const CourseCard = ({ course, onClick }: CourseCardProps) => {
           {course.title}
         </h3>
         <p className="text-sm text-muted-foreground line-clamp-2">
-          {course.description}
+          {course.description || "No description available."}
         </p>
       </CardContent>
     </Card>
