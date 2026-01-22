@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "../supabaseClient"; // Supabase Connected
+import { supabase } from "@/supabaseClient";
 
 // Components
 import Hero, { HeroData } from "@/components/Landing/Hero"; // Type import kiya
