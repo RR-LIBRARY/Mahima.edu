@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/supabaseClient";
 import heroImage from "@/assets/hero-image.jpg";
 
 // 1. Data Structure Define kiya
