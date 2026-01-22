@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Send } from "lucide-react";
+// Supabase Import (Path check kar lein, aapke project ke hisab se)
+import { supabase } from "@/integrations/supabase/client";
 
 const LeadForm = () => {
   const [formData, setFormData] = useState({
@@ -15,17 +17,44 @@ const LeadForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation
     if (!formData.parentName || !formData.email || !formData.grade) {
       toast.error("Please fill all fields");
       return;
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    toast.success("Thank you! We'll contact you soon.");
-    setFormData({ parentName: "", email: "", grade: "" });
-    setIsSubmitting(false);
+
+    try {
+      // 1. Database me data bhejna
+      // Hum column names match kar rahe hain jo humne SQL me banaye (parent_name, etc.)
+      const { error } = await supabase
+        .from('leads') 
+        .insert([
+          {
+            parent_name: formData.parentName,
+            email: formData.email,
+            grade: formData.grade,
+          }
+        ]);
+
+      if (error) {
+        throw error;
+      }
+
+      // 2. Success message
+      toast.success("Thank you! We'll contact you soon.");
+      
+      // Form reset karna
+      setFormData({ parentName: "", email: "", grade: "" });
+      
+    } catch (error: any) {
+      console.error("Error submitting lead:", error);
+      toast.error(error.message || "Failed to submit. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
