@@ -3,7 +3,17 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
 
-const Hero = () => {
+// 1. Yahan humne bataya ki data kaisa dikhega (Interface add kiya)
+interface HeroProps {
+  data?: {
+    title: string;
+    subtitle: string;
+    cta_text: string;
+  } | null;
+}
+
+// 2. Yahan props receive kiya ({ data }: HeroProps)
+const Hero = ({ data }: HeroProps) => {
   return (
     <section className="relative overflow-hidden bg-background">
       {/* Background decoration */}
@@ -21,27 +31,43 @@ const Hero = () => {
               <span>For Grades 1-5</span>
             </div>
 
+            {/* 3. Title Logic: Agar data.title hai to wo dikhao, nahi to purana design */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-              Learning Made{" "}
-              <span className="text-transparent bg-clip-text bg-[image:var(--gradient-primary)]">
-                Fun & Easy
-              </span>
+              {data?.title ? (
+                data.title
+              ) : (
+                <>
+                  Learning Made{" "}
+                  <span className="text-transparent bg-clip-text bg-[image:var(--gradient-primary)]">
+                    Fun & Easy
+                  </span>
+                </>
+              )}
             </h1>
 
+            {/* 4. Subtitle Logic: Database wala text YA fir default text */}
             <p className="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto lg:mx-0">
-              Join Mahima Academy and watch your child excel with our interactive courses,
-              expert teachers, and joyful learning experience.
+              {data?.subtitle ||
+                "Join Mahima Academy and watch your child excel with our interactive courses, expert teachers, and joyful learning experience."}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link to="/dashboard">
-                <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-lg shadow-primary/20">
-                  Start Learning
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-lg shadow-primary/20"
+                >
+                  {/* 5. Button Text Logic */}
+                  {data?.cta_text || "Start Learning"}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/courses">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-border text-foreground hover:bg-muted">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto border-border text-foreground hover:bg-muted"
+                >
                   View Courses
                 </Button>
               </Link>
@@ -82,8 +108,12 @@ const Hero = () => {
                   ✓
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground text-sm">Live Classes</p>
-                  <p className="text-xs text-muted-foreground">Interactive learning</p>
+                  <p className="font-semibold text-foreground text-sm">
+                    Live Classes
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Interactive learning
+                  </p>
                 </div>
               </div>
             </div>
