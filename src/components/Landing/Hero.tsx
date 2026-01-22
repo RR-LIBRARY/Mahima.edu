@@ -3,7 +3,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
 
-// Defined exactly what Supabase JSON looks like
+// 1. Data Structure Define kiya
 export interface HeroData {
   title: string;
   subtitle: string;
@@ -11,9 +11,10 @@ export interface HeroData {
 }
 
 interface HeroProps {
-  data: HeroData | null; // Allow null while loading
+  data: HeroData | null; // Data parent se aayega
 }
 
+// 2. Props receive kiye
 const Hero = ({ data }: HeroProps) => {
   return (
     <section className="relative overflow-hidden bg-background">
@@ -32,46 +33,26 @@ const Hero = ({ data }: HeroProps) => {
               <span>For Grades 1-5</span>
             </div>
 
+            {/* 3. Dynamic Title */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-              {data?.title ? (
-                data.title
-              ) : (
-                <>
-                  Learning Made{" "}
-                  <span className="text-transparent bg-clip-text bg-[image:var(--gradient-primary)]">
-                    Fun & Easy
-                  </span>
-                </>
-              )}
+              {data?.title || "Learning Made Fun & Easy"}
             </h1>
 
+            {/* 4. Dynamic Subtitle */}
             <p className="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto lg:mx-0">
-              {data?.subtitle ||
-                "Join Mahima Academy and watch your child excel with our interactive courses, expert teachers, and joyful learning experience."}
+              {data?.subtitle || "Join Mahima Academy for world-class education."}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Link to="/dashboard">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-lg shadow-primary/20"
-                >
-                  {data?.cta_text || "Start Learning"}
+              <Link to="/signup">
+                <Button size="lg" className="w-full sm:w-auto bg-primary text-primary-foreground gap-2">
+                  {data?.cta_text || "Get Started"}
                   <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to="/courses">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto border-border text-foreground hover:bg-muted"
-                >
-                  View Courses
                 </Button>
               </Link>
             </div>
             
-            {/* Stats Section remains static or can be made dynamic similarly */}
+            {/* Stats (Static rakha hai) */}
             <div className="flex items-center justify-center lg:justify-start gap-8 pt-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-foreground">500+</div>
@@ -82,22 +63,13 @@ const Hero = ({ data }: HeroProps) => {
                 <div className="text-2xl font-bold text-foreground">50+</div>
                 <div className="text-sm text-muted-foreground">Courses</div>
               </div>
-              <div className="h-10 w-px bg-border" />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-foreground">20+</div>
-                <div className="text-sm text-muted-foreground">Teachers</div>
-              </div>
             </div>
           </div>
 
           {/* Image */}
           <div className="relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-              <img
-                src={heroImage}
-                alt="Happy children learning"
-                className="w-full h-auto"
-              />
+            <div className="rounded-3xl overflow-hidden shadow-2xl">
+              <img src={heroImage} alt="Learning" className="w-full h-auto" />
             </div>
           </div>
         </div>
