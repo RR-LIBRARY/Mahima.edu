@@ -4,8 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Send } from "lucide-react";
-// Supabase Import (Path check kar lein, aapke project ke hisab se)
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "../supabaseClient";
 
 const LeadForm = () => {
   const [formData, setFormData] = useState({
