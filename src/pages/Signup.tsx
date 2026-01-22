@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../supabaseClient"; // Direct Connection
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Eye, EyeOff, UserPlus } from "lucide-react";
+import { Eye, EyeOff, UserPlus, Loader2 } from "lucide-react"; // Added Loader2
 import logo from "@/assets/logo.png";
 
 const Signup = () => {
@@ -18,12 +17,12 @@ const Signup = () => {
   const [role, setRole] = useState<"teacher" | "parent">("parent");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signup } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 1. Basic Validations
     if (!name || !email || !password || !confirmPassword) {
       toast.error("Please fill in all fields");
       return;
@@ -39,15 +38,43 @@ const Signup = () => {
       return;
     }
 
-    setIsLoading(true);
-    const success = await signup(name, email, password, role);
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
 
-    if (success) {
-      toast.success("Account created successfully!");
-      navigate("/dashboard");
-    } else {
-      toast.error("Failed to create account");
+      // 2. Supabase Signup Call
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          // Ye data SQL Trigger pakad lega aur Profiles table me daal dega
+          data: {
+            full_name: name,
+            role: role,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      // 3. Success Handling
+      if (data.user) {
+        toast.success("Account created successfully!");
+        
+        // Agar aapne Supabase me 'Confirm Email' on rakha hai:
+        if (data.session === null) {
+           toast.info("Please check your email to confirm your account.");
+           navigate("/login");
+        } else {
+           // Agar 'Confirm Email' off hai (Direct login):
+           navigate("/dashboard");
+        }
+      }
+      
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      toast.error(error.message || "Failed to create account");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -165,7 +192,10 @@ const Signup = () => {
               disabled={isLoading}
             >
               {isLoading ? (
-                "Creating account..."
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Creating account...
+                </>
               ) : (
                 <>
                   <UserPlus className="h-5 w-5" />
