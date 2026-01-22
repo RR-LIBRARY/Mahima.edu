@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast"; 
 import { Send } from "lucide-react";
 import { supabase } from "../supabaseClient";
 
@@ -19,104 +19,75 @@ const LeadForm = () => {
     
     // Validation
     if (!formData.parentName || !formData.email || !formData.grade) {
-      toast.error("Please fill all fields");
+      toast({ title: "Error", description: "Please fill all fields", variant: "destructive" });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // 1. Database me data bhejna
-      // Hum column names match kar rahe hain jo humne SQL me banaye (parent_name, etc.)
+      // 1. Database Insert
       const { error } = await supabase
-        .from('leads') 
+        .from('leads')
         .insert([
           {
-            parent_name: formData.parentName,
-            email: formData.email,
-            grade: formData.grade,
+            parent_name: formData.parentName, // Matches SQL 'parent_name'
+            email: formData.email,            // Matches SQL 'email'
+            grade: formData.grade,            // Matches SQL 'grade'
           }
         ]);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      // 2. Success message
-      toast.success("Thank you! We'll contact you soon.");
-      
-      // Form reset karna
+      // Success
+      toast({ title: "Success", description: "Request received!" });
       setFormData({ parentName: "", email: "", grade: "" });
       
     } catch (error: any) {
-      console.error("Error submitting lead:", error);
-      toast.error(error.message || "Failed to submit. Please try again.");
+      console.error("Error:", error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <section className="py-20 bg-[image:var(--gradient-primary)] relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-20 left-10 w-40 h-40 rounded-full bg-primary-foreground blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-primary-foreground blur-3xl" />
-      </div>
-
-      <div className="container mx-auto px-4 relative">
-        <div className="max-w-xl mx-auto bg-card rounded-3xl p-8 shadow-2xl">
+    <section className="py-20 bg-muted/50">
+      <div className="container mx-auto px-4 max-w-xl">
+        <div className="bg-card p-8 rounded-3xl shadow-lg border border-border">
           <div className="text-center mb-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-              Get Started Today
-            </h2>
-            <p className="text-muted-foreground">
-              Schedule a free demo class for your child
-            </p>
+            <h2 className="text-2xl font-bold">Book a Free Demo</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Input
-                placeholder="Parent's Name"
-                value={formData.parentName}
-                onChange={(e) => setFormData({ ...formData, parentName: e.target.value })}
-                className="bg-background border-border"
-              />
-            </div>
-            <div>
-              <Input
-                type="email"
-                placeholder="Email Address"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="bg-background border-border"
-              />
-            </div>
-            <div>
-              <Select
-                value={formData.grade}
-                onValueChange={(value) => setFormData({ ...formData, grade: value })}
-              >
-                <SelectTrigger className="bg-background border-border">
-                  <SelectValue placeholder="Select Grade" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1, 2, 3, 4, 5].map((grade) => (
-                    <SelectItem key={grade} value={String(grade)}>
-                      Grade {grade}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              type="submit"
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
-              disabled={isSubmitting}
+            <Input
+              placeholder="Parent's Name"
+              value={formData.parentName}
+              onChange={(e) => setFormData({ ...formData, parentName: e.target.value })}
+            />
+            <Input
+              type="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+            <Select
+              value={formData.grade}
+              onValueChange={(val) => setFormData({ ...formData, grade: val })}
             >
-              {isSubmitting ? "Submitting..." : "Request Demo"}
-              <Send className="h-4 w-4" />
+              <SelectTrigger>
+                <SelectValue placeholder="Select Grade" />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 3, 4, 5].map((g) => (
+                  <SelectItem key={g} value={String(g)}>Grade {g}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Sending..." : "Request Demo"} 
+              <Send className="ml-2 h-4 w-4" />
             </Button>
           </form>
         </div>
