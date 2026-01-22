@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast"; 
 import { Send } from "lucide-react";
-import { supabase } from "../supabaseClient";
+// FIX: Path change kiya hai
+import { supabase } from "@/supabaseClient"; 
 
 const LeadForm = () => {
   const [formData, setFormData] = useState({
