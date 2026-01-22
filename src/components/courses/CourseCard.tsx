@@ -1,60 +1,119 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import Header from "@/components/Layout/Header";
+import Sidebar from "@/components/Layout/Sidebar";
+import CourseCard, { CourseProps } from "@/components/courses/CourseCard";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient"; 
 
-// Interface that supports BOTH Supabase and Mock Data types
-export interface CourseProps {
-  id: string;
-  title: string;
-  description?: string;
-  // Supabase uses 'image_url', MockData might use 'thumbnailUrl'
-  image_url?: string; 
-  thumbnailUrl?: string; 
-  // Supabase uses 'grade', MockData might use something else or same
-  grade?: number;     
-  price?: number;
-}
+const Courses = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedGrade, setSelectedGrade] = useState<string>("all");
+  const navigate = useNavigate();
 
-interface CourseCardProps {
-  course: CourseProps;
-  onClick?: () => void;
-}
+  // 1. State for Real Data & Loading
+  const [courseList, setCourseList] = useState<CourseProps[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const CourseCard = ({ course, onClick }: CourseCardProps) => {
-  // Logic: Agar image_url hai to wo use karo, nahi to thumbnailUrl, nahi to placeholder
-  const displayImage = course.image_url || course.thumbnailUrl || "https://via.placeholder.com/400x300?text=No+Image";
-  
-  // Logic: Description handle karna
-  const displayDesc = course.description || "No description available.";
+  // 2. Fetch Data from Supabase
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      if (data) {
+        setCourseList(data);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 3. Generate Grade Options
+  const gradeOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+  // 4. Filtering Logic
+  const filteredCourses = selectedGrade === "all"
+    ? courseList
+    : courseList.filter((c) => c.grade === Number(selectedGrade));
 
   return (
-    <Card
-      className="overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-card border-border"
-      onClick={onClick}
-    >
-      <div className="aspect-video relative overflow-hidden bg-muted">
-        <img
-          src={displayImage}
-          alt={course.title}
-          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-        />
-        
-        {/* Sirf tab dikhaye jab grade exist karta ho */}
-        {course.grade && (
-          <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
-            Grade {course.grade}
-          </Badge>
-        )}
+    <div className="min-h-screen bg-background flex flex-col">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Header onMenuClick={() => setSidebarOpen(true)} />
+
+      {/* Page Header */}
+      <div className="bg-primary px-4 py-4 flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          className="text-primary-foreground hover:bg-primary-foreground/10"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-lg font-semibold text-primary-foreground">Courses</h1>
       </div>
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-lg text-foreground mb-1 line-clamp-1">
-          {course.title}
-        </h3>
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {displayDesc}
-        </p>
-      </CardContent>
-    </Card>
+
+      <main className="flex-1 p-4 space-y-4">
+        {/* Filter Section */}
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {loading ? "Loading..." : `${filteredCourses.length} courses available`}
+          </p>
+          <Select value={selectedGrade} onValueChange={setSelectedGrade}>
+            <SelectTrigger className="w-32 bg-card border-border">
+              <SelectValue placeholder="All Grades" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Grades</SelectItem>
+              {gradeOptions.map((grade) => (
+                <SelectItem key={grade} value={String(grade)}>
+                  Grade {grade}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Course Grid - UPDATED SECTION ✅ */}
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground">Loading courses...</div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredCourses.map((course) => (
+              <CourseCard 
+                key={course.id} 
+                course={course}
+                // Ye line add kar di hai. Ab click karne par user '/buy-course' par jayega 👇
+                onClick={() => navigate(`/buy-course?id=${course.id}`)} 
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && filteredCourses.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No courses found for this grade.</p>
+          </div>
+        )}
+      </main>
+    </div>
   );
 };
 
-export default CourseCard;
+export default Courses;
